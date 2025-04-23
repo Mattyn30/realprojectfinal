@@ -1,0 +1,86 @@
+.common.header {
+  display: flex; /* Enables flexible layout */
+  justify-content: space-between; /* Pushes elements to edges */
+  align-items: center; /* Vertically aligns items */
+  padding: 10px 20px; /* Adds spacing */
+  background-color: #f5f5f5; /* Example background color */
+  position: relative; /* Allows fine adjustments if necessary */
+}
+
+.subheader {
+  position: absolute; /* Positions the "Home" button independently */
+  top: 10px; /* Adjusts vertical positioning */
+  right: 20px; /* Moves it to the right */
+  display: flex;
+  gap: 10px;
+  color: #9147ff
+}
+
+#top {
+  font-size: 14px; /* Example font size */
+  text-decoration: none; /* Removes underline from link */
+  color: #333; /* Example text color */
+  padding: 5px 10px; /* Adds padding for better spacing */
+  background-color: #4dc7fa; /* Coral background */
+  border-radius: 5px; /* Rounded edges for button look */
+}
+
+#top:hover {
+  background-color: #4de7fa; /* Changes background on hover */
+  color: white; /* Changes text color on hover */
+}
+  
+  
+  .leftmenu {
+    position: absolute;
+    top: 300px; /* right below the header */
+    left: 0;
+    width: 50%;
+    bottom: 0;
+    z-index: 2;
+    padding: 10px;
+    
+  }
+  
+
+  .common.mainbody {
+    margin-top: 100px;    /* below the header */
+    margin-left: 50%;
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    align-items: center;
+   
+  }
+  
+  .video-wrapper {
+    width: 350px;
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+  
+  .video-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+  
+  .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  
+  .tableau-wrapper {
+    width: 100%;
+    max-width: 1600px;
+  }
+

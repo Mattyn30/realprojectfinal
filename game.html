@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Rap Lyric!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Apply the game font */
+        body, button, input, .game-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        /* Basic styling for SVG rapper items */
+        .rapper-svg-item {
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0.2; /* Hidden items are slightly visible */
+        }
+        .visible-item {
+            opacity: 1;
+        }
+         /* Style placeholder text */
+        ::placeholder {
+             font-family: 'Press Start 2P', cursive;
+             font-size: 0.75rem; /* Smaller placeholder */
+             opacity: 0.6;
+        }
+        /* Ensure consistent height for rapper area */
+        #rapper-display {
+            min-height: 200px; /* Increased height for SVG */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative; /* Needed for absolute positioning of SVG */
+            margin-bottom: 1.5rem; /* Ensure space below SVG */
+        }
+        /* SVG specific styles */
+        #rapper-svg {
+            width: 150px;
+            height: 180px;
+            transition: transform 1s ease-in, opacity 1s ease-in; /* For leaving animation */
+            overflow: visible; /* Allow items like afro to extend slightly */
+        }
+         /* Animation for the rapper leaving */
+        @keyframes leaveScreen {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(100px); opacity: 0; }
+        }
+        .rapper-leaving #rapper-svg { /* Target the SVG inside the leaving container */
+             animation: leaveScreen 1s ease-in forwards;
+        }
+
+        /* Button styling */
+        button {
+            transition: background-color 0.3s ease-in-out, transform 0.1s ease;
+        }
+        button:active {
+             transform: scale(0.95); /* Click effect */
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            .hint-btn, .skip-btn {
+    background-color: #ff7f50; /* Coral */
+        }
+
+            .hint-btn:hover, .skip-btn:hover {
+                background-color: #ff4500; /* Orange Red or adjust as needed */
+            }
+        }
+        .hint-btn:hover:not(:disabled) {
+             background-color: #ff6347; /* Tomato */
+        }
+         .skip-btn:hover:not(:disabled) {
+             background-color: #ff6347; /* Tomato */
+        }
+
+    </style>
+</head>
+<body class="bg-gradient-to-r from-purple-500 to-indigo-600 min-h-screen flex flex-col items-center justify-center text-white p-4">
+
+    <div class="bg-gray-800 bg-opacity-80 p-6 md:p-8 rounded-lg shadow-xl text-center max-w-xl w-full">
+
+        <h1 class="text-2xl md:text-3xl mb-6 game-font text-yellow-400">Guess The Lyric!</h1>
+
+        <div id="lyric-prompt" class="mb-4 text-base md:text-lg h-16 flex items-center justify-center px-2">
+            Loading lyric...
+        </div>
+
+        <div id="rapper-display">
+            <svg id="rapper-svg" viewBox="0 0 100 120">
+                <line x1="50" y1="40" x2="50" y2="80" stroke="white" stroke-width="4" /> <line x1="50" y1="55" x2="30" y2="70" stroke="white" stroke-width="4" /> <line x1="50" y1="55" x2="70" y2="70" stroke="white" stroke-width="4" /> <line x1="50" y1="80" x2="40" y2="110" stroke="white" stroke-width="4" /> <line x1="50" y1="80" x2="60" y2="110" stroke="white" stroke-width="4" /> <circle id="rapper-head" cx="50" cy="25" r="15" fill="none" stroke="white" stroke-width="4" />
+                <circle id="eye-left" cx="45" cy="25" r="1.5" fill="white" />
+                <circle id="eye-right" cx="55" cy="25" r="1.5" fill="white" />
+                 <line id="mouth-neutral" x1="46" y1="32" x2="54" y2="32" stroke="white" stroke-width="1.5" />
+                <path id="mouth-sad" d="M 46 34 Q 50 28 54 34" stroke="white" stroke-width="1.5" fill="none" class="hidden"/>
+
+
+                <path id="item-afro" class="rapper-svg-item" d="M 25 30 Q 20 10 50 5 Q 80 10 75 30 A 25 25 0 0 0 25 30 Z" fill="black" stroke="gray" stroke-width="1"/>
+                <circle id="item-chain" class="rapper-svg-item" cx="50" cy="50" r="10" fill="none" stroke="gold" stroke-width="3" />
+                <g id="item-mic" class="rapper-svg-item" transform="translate(70, 65) rotate(45)">
+                     <rect x="-5" y="-15" width="10" height="18" fill="gray" rx="3"/>
+                     <circle cx="0" cy="-18" r="6" fill="darkgray" />
+                </g>
+                 <g id="item-boombox" class="rapper-svg-item" transform="translate(15, 90)">
+                    <rect width="25" height="15" fill="silver" rx="3"/>
+                    <circle cx="7" cy="7.5" r="4" fill="black"/>
+                    <circle cx="18" cy="7.5" r="4" fill="black"/>
+                    <rect x="0" y="-3" width="5" height="3" fill="gray"/> </g>
+                <rect id="item-phone" class="rapper-svg-item" x="22" y="65" width="8" height="12" fill="darkslategray" rx="2" transform="rotate(-25 30 70)"/>
+                <g id="item-shoes" class="rapper-svg-item">
+                    <ellipse cx="40" cy="112" rx="6" ry="3" fill="red" transform="rotate(-15 40 110)"/>
+                    <ellipse cx="60" cy="112" rx="6" ry="3" fill="red" transform="rotate(15 60 110)"/>
+                </g>
+            </svg>
+        </div>
+
+        <div class="mb-4">
+            <input type="text" id="guess-input" placeholder="Finish the line..." class="text-black w-full p-3 rounded border border-gray-400 text-center game-font text-sm">
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-2 mb-4">
+             <button id="submit-guess" class="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-4 rounded game-font text-xs flex-1 transition duration-300 ease-in-out">
+                Guess!
+            </button>
+             <button id="hint-button" class="hint-btn text-white font-bold py-3 px-4 rounded game-font text-xs flex-1 transition duration-300 ease-in-out">
+                Hint (-1)
+            </button>
+             <button id="skip-button" class="skip-btn text-white font-bold py-3 px-4 rounded game-font text-xs flex-1 transition duration-300 ease-in-out">
+                Skip (-1)
+            </button>
+        </div>
+
+
+        <div id="feedback" class="mb-2 h-10 text-yellow-300 flex items-center justify-center text-xs leading-tight"></div>
+
+        <div id="guesses-remaining" class="mb-4 text-sm">
+            Incorrect Guesses Left: <span id="guesses-count" class="font-bold text-red-400">5</span>
+        </div>
+
+        <div id="win-lose-message" class="text-xl md:text-2xl font-bold h-8"></div>
+
+        <button id="play-again" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded mt-4 game-font text-sm hidden transition duration-300 ease-in-out">
+            Play Again?
+        </button>
+
+    </div>
+
+    <script>
+        // --- Game Data ---
+        const lyrics = [
+            { start: "It was all a dream, I used to read Word Up! ...", end: "magazine" },
+            { start: "I'm gonna knock you out, Mama said...", end: "knock you out" },
+            { start: "Now this is a story all about how my life got flipped...", end: "turned upside down" },
+            { start: "To the hip hip hop-a you don't...", end: "stop" },
+            { start: "I like the way you work it...", end: "no diggity" },
+            { start: "Can't touch this...", end: "hammertime" },
+            { start: "California love! In the city...", end: "of Compton" },
+            { start: "Guess who's back, back again...", end: "Shady's back" },
+            { start: "Mom's spaghetti, he's nervous but on the surface he looks calm...", end: "and ready" },
+            { start: "Rollin' down the street, smokin' indo, sippin' on...", end: "gin and juice" }
+        ];
+
+        // Items to collect - order matters for reveal
+        const items = ["afro", "chain", "mic", "boombox", "phone", "shoes"];
+
+        // --- DOM Elements ---
+        const lyricPromptEl = document.getElementById('lyric-prompt');
+        const guessInputEl = document.getElementById('guess-input');
+        const submitGuessBtn = document.getElementById('submit-guess');
+        const feedbackEl = document.getElementById('feedback');
+        const guessesCountEl = document.getElementById('guesses-count');
+        const winLoseMessageEl = document.getElementById('win-lose-message');
+        const playAgainBtn = document.getElementById('play-again');
+        const rapperDisplayEl = document.getElementById('rapper-display'); // Container for SVG
+        const rapperSvgEl = document.getElementById('rapper-svg'); // The SVG element itself
+        const mouthNeutralEl = document.getElementById('mouth-neutral');
+        const mouthSadEl = document.getElementById('mouth-sad');
+        const hintButton = document.getElementById('hint-button');
+        const skipButton = document.getElementById('skip-button');
+
+
+        // --- Game State ---
+        let currentLyric = null;
+        let remainingGuesses = 5;
+        let itemsCollected = 0;
+        let availableLyrics = [];
+        let gameOver = false;
+        let hintUsedThisTurn = false;
+
+        // --- Functions ---
+
+        // Function to shuffle an array (Fisher-Yates algorithm)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
+
+        // Function to update guesses and check for game over
+        function loseGuess(penalty = 1) {
+             if (gameOver) return false; // Don't lose guess if game already over
+
+             remainingGuesses -= penalty;
+             guessesCountEl.textContent = remainingGuesses;
+             if (remainingGuesses <= 0) {
+                 loseGame();
+                 return true; // Game is now over
+             }
+             return false; // Game continues
+        }
+
+
+        // Function to start or reset the game
+        function startGame() {
+            console.log("Starting game...");
+            gameOver = false;
+            remainingGuesses = 5;
+            itemsCollected = 0;
+            availableLyrics = [...lyrics]; // Copy lyrics array
+            shuffleArray(availableLyrics); // Shuffle the lyrics order
+
+            // Reset UI
+            feedbackEl.textContent = "";
+            winLoseMessageEl.textContent = "";
+            guessesCountEl.textContent = remainingGuesses;
+            guessInputEl.value = "";
+            guessInputEl.disabled = false;
+            submitGuessBtn.disabled = false;
+            hintButton.disabled = false;
+            skipButton.disabled = false;
+            playAgainBtn.classList.add('hidden');
+            rapperDisplayEl.classList.remove('rapper-leaving'); // Reset animation class on container
+            mouthNeutralEl.classList.remove('hidden');
+            mouthSadEl.classList.add('hidden');
+
+
+            // Reset rapper items visibility (SVG)
+            items.forEach(itemId => {
+                const itemEl = document.getElementById(`item-${itemId}`);
+                if (itemEl) {
+                    itemEl.classList.remove('visible-item');
+                    // Ensure base class is present if removed
+                    if (!itemEl.classList.contains('rapper-svg-item')) {
+                         itemEl.classList.add('rapper-svg-item');
+                    }
+                } else {
+                    console.error(`Item element not found: item-${itemId}`);
+                }
+            });
+
+            // Load the first lyric
+            loadNextLyric();
+            console.log("Game started. First lyric loaded.");
+        }
+
+        // Function to load the next lyric
+        function loadNextLyric() {
+            console.log("Loading next lyric...");
+            hintUsedThisTurn = false; // Reset hint status for the new lyric
+            hintButton.disabled = false; // Re-enable hint button
+            feedbackEl.classList.remove('text-red-400', 'text-green-400'); // Reset color
+
+            if (availableLyrics.length === 0) {
+                console.log("No more lyrics available.");
+                 // If somehow all lyrics are used before winning (e.g., skipping)
+                 // Check if already won/lost to avoid double messages
+                if (!gameOver) {
+                     // Decide outcome - maybe a draw or treat as win if some items collected?
+                     // For now, let's assume they must get all items, so this state is unlikely
+                     // without skipping excessively. Could treat as a loss if not all items collected.
+                     if (itemsCollected < items.length) {
+                         loseGame("Ran out of lyrics!"); // Custom lose message
+                     } else {
+                         winGame(); // Should have won already if itemsCollected == items.length
+                     }
+                }
+                return;
+            }
+
+            // Get the next lyric from the shuffled list
+            currentLyric = availableLyrics.pop();
+            lyricPromptEl.textContent = currentLyric.start;
+            guessInputEl.value = ""; // Clear input for next guess
+            feedbackEl.textContent = ""; // Clear feedback
+            console.log("Next lyric:", currentLyric.start, " | End:", currentLyric.end);
+
+             // Disable hint button if answer is a single word
+             const answerWords = currentLyric.end.split(' ');
+             if (answerWords.length <= 1) {
+                 hintButton.disabled = true;
+                 console.log("Hint disabled: single word answer");
+             }
+        }
+
+        // Function to handle guess submission
+        function handleGuess() {
+            if (gameOver) return;
+
+            const userGuess = guessInputEl.value.trim().toLowerCase();
+            const correctAnswer = currentLyric.end.toLowerCase();
+            console.log(`User guess: "${userGuess}", Correct answer: "${correctAnswer}"`);
+
+            if (!userGuess) {
+                feedbackEl.textContent = "Please enter a guess!";
+                feedbackEl.classList.add('text-red-400');
+                return;
+            }
+            feedbackEl.classList.remove('text-red-400', 'text-green-400'); // Reset color
+
+
+            if (userGuess === correctAnswer) {
+                // --- Correct Guess ---
+                console.log("Correct guess!");
+                feedbackEl.textContent = "Correct!";
+                feedbackEl.classList.add('text-green-400');
+                itemsCollected++;
+
+                // Reveal the next item (SVG)
+                if (itemsCollected <= items.length) {
+                    const itemId = items[itemsCollected - 1];
+                     const itemEl = document.getElementById(`item-${itemId}`);
+                     if(itemEl) {
+                        itemEl.classList.add('visible-item');
+                        console.log(`Revealed item: ${itemId}`);
+                     } else {
+                         console.error(`Item element not found for reveal: item-${itemId}`);
+                     }
+                }
+
+                // Check for win condition
+                if (itemsCollected === items.length) {
+                    winGame();
+                } else {
+                    // Load next lyric after a short delay
+                    setTimeout(loadNextLyric, 1200); // Slightly longer delay
+                }
+
+            } else {
+                // --- Incorrect Guess ---
+                console.log("Incorrect guess.");
+                feedbackEl.textContent = "Incorrect! Try again.";
+                feedbackEl.classList.add('text-red-400');
+                loseGuess(); // Lose one guess
+            }
+             guessInputEl.value = ""; // Clear input after guess processed
+        }
+
+         // Function to handle Hint request
+        function handleHint() {
+            if (gameOver || hintUsedThisTurn || remainingGuesses <= 0) return;
+
+            const answerWords = currentLyric.end.split(' ');
+            if (answerWords.length <= 1) {
+                feedbackEl.textContent = "Hint not available for single-word answers.";
+                feedbackEl.classList.remove('text-red-400', 'text-green-400');
+                return;
+            }
+
+            console.log("Hint requested.");
+            const firstWord = answerWords[0];
+            feedbackEl.textContent = `Hint: "${firstWord}" (-1 Guess)`;
+            feedbackEl.classList.remove('text-red-400', 'text-green-400'); // Neutral color for hint
+            hintUsedThisTurn = true;
+            hintButton.disabled = true; // Disable after use for this turn
+
+            loseGuess(); // Lose one guess for the hint
+        }
+
+        // Function to handle Skip request
+        function handleSkip() {
+             if (gameOver || remainingGuesses <= 0) return;
+
+             console.log("Skip requested.");
+             feedbackEl.textContent = `Skipped! The answer was: "${currentLyric.end}" (-1 Guess)`;
+             feedbackEl.classList.remove('text-red-400', 'text-green-400'); // Neutral color
+
+             const isGameOver = loseGuess(); // Lose one guess, check if game ends
+             if (!isGameOver) {
+                 setTimeout(loadNextLyric, 1500); // Load next lyric after showing answer
+             }
+        }
+
+
+        // Function for winning the game
+        function winGame() {
+            console.log("Player wins!");
+            gameOver = true;
+            winLoseMessageEl.textContent = "You win!";
+            winLoseMessageEl.classList.add('text-green-400');
+            guessInputEl.disabled = true;
+            submitGuessBtn.disabled = true;
+            hintButton.disabled = true;
+            skipButton.disabled = true;
+            playAgainBtn.classList.remove('hidden');
+            feedbackEl.textContent = ""; // Clear feedback
+        }
+
+        // Function for losing the game
+        function loseGame(message = "You lose playa") {
+            console.log("Player loses.");
+            gameOver = true;
+            winLoseMessageEl.textContent = message; // Use provided message or default
+            winLoseMessageEl.classList.remove('text-green-400'); // Ensure not green
+            winLoseMessageEl.classList.add('text-red-500');
+            guessInputEl.disabled = true;
+            submitGuessBtn.disabled = true;
+            hintButton.disabled = true;
+            skipButton.disabled = true;
+            playAgainBtn.classList.remove('hidden');
+             // Show correct answer only if lost due to guesses, not running out of lyrics
+             if (message === "You lose playa") {
+                feedbackEl.textContent = `The answer was: ${currentLyric.end}`;
+             }
+            feedbackEl.classList.remove('text-green-400');
+            feedbackEl.classList.add('text-yellow-300');
+
+
+            // Rapper cries and leaves animation (SVG)
+            mouthNeutralEl.classList.add('hidden');
+            mouthSadEl.classList.remove('hidden');
+
+
+            // Add leaving animation class to the container after a short delay
+            setTimeout(() => {
+                 rapperDisplayEl.classList.add('rapper-leaving');
+                 console.log("Rapper leaving animation started.");
+            }, 500); // Delay before animation starts
+        }
+
+
+        // --- Event Listeners ---
+        submitGuessBtn.addEventListener('click', handleGuess);
+        hintButton.addEventListener('click', handleHint);
+        skipButton.addEventListener('click', handleSkip);
+
+
+        // Allow pressing Enter to submit guess
+        guessInputEl.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                handleGuess();
+            }
+        });
+
+        playAgainBtn.addEventListener('click', startGame);
+
+        // --- Initial Game Start ---
+        window.onload = startGame;
+
+    </script>
+
+</body>
+</html>
